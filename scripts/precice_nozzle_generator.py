@@ -245,6 +245,11 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
     # Place mesh and input files in correct locations for CalculiX
     shutil.copy2(mesh_files['solid'], os.path.join(output_dir, 'calculix/mesh.inp'))
 
+    # Copy CalculiX input template and rename to solid.inp in calculix directory
+    shutil.copy2(template_dir / 'calculix/nozzle.inp', os.path.join(output_dir, 'calculix/solid.inp'))
+    # Fill placeholders in solid.inp
+    replace_in_file(os.path.join(output_dir, 'calculix/solid.inp'), replacements)
+
     # Place mesh files
     mesh_map = {
         'solid': 'calculix/mesh.msh',

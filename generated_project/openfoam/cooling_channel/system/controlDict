@@ -1,6 +1,6 @@
-application     rhoCentralFoam;
+application     {{simulation.cooling_solver}};
 startFrom       startTime;
-endTime         0.01;
-deltaT          1e-6;
+endTime         {{simulation.end_time}};
+deltaT          {{simulation.time_step}};
 writeControl    timeStep;
-writeInterval   100;
+writeInterval   {{simulation.write_interval}};

@@ -1,12 +1,12 @@
 /* Initial mass fraction for H2O */
 dimensions      [0 0 0 0 0 0 0];
-internalField   uniform 0.0;
+internalField   uniform {{combustion.initial_mass_fractions.H2O}};
 boundaryField
 {
     inlet
     {
         type            fixedValue;
-        value           uniform 0.0;
+        value           uniform {{combustion.initial_mass_fractions.H2O}};
     }
     outlet
     {

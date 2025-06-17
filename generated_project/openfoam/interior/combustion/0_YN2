@@ -1,12 +1,12 @@
 /* Initial mass fraction for N2 */
 dimensions      [0 0 0 0 0 0 0];
-internalField   uniform 0.76;
+internalField   uniform {{combustion.initial_mass_fractions.N2}};
 boundaryField
 {
     inlet
     {
         type            fixedValue;
-        value           uniform 0.76;
+        value           uniform {{combustion.initial_mass_fractions.N2}};
     }
     outlet
     {

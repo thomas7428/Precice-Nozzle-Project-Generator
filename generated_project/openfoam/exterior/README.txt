@@ -1,6 +1,6 @@
 /* OpenFOAM exterior fluid case template */
-/* Mesh file: generated_project/meshs/Solid_mesh.msh */
-/* Fraction of pi: 0.5 */
+/* Mesh file: {{MESH_PATH}} */
+/* Fraction of pi: {{FRACTION_OF_PI}} */
 
 /* Replace this file with a real OpenFOAM case template for the exterior fluid region. */
 
