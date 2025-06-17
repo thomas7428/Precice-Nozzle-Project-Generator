@@ -1,14 +1,10 @@
 boundaryField
 {
+    Nozzle_Outer_Wall_6
+    {
+        type            preciceAdapter;
+    }
     Nozzle_Outer_Wall_14
-    {
-        type            preciceAdapter;
-    }
-    Nozzle_Outer_Wall_16
-    {
-        type            preciceAdapter;
-    }
-    Nozzle_Outer_Wall_9
     {
         type            preciceAdapter;
     }
@@ -16,7 +12,7 @@ boundaryField
     {
         type            preciceAdapter;
     }
-    Nozzle_Outer_Wall_7
+    Nozzle_Outer_Wall_5
     {
         type            preciceAdapter;
     }
@@ -24,15 +20,11 @@ boundaryField
     {
         type            preciceAdapter;
     }
-    Nozzle_Outer_Wall_15
+    Nozzle_Outer_Wall_7
     {
         type            preciceAdapter;
     }
-    Nozzle_Outer_Wall_6
-    {
-        type            preciceAdapter;
-    }
-    Nozzle_Outer_Wall_4
+    Nozzle_Outer_Wall_16
     {
         type            preciceAdapter;
     }
@@ -44,15 +36,7 @@ boundaryField
     {
         type            preciceAdapter;
     }
-    Nozzle_Outer_Wall_10
-    {
-        type            preciceAdapter;
-    }
-    Cooling_Channel_2_Entry_Wall
-    {
-        type            preciceAdapter;
-    }
-    Nozzle_Outer_Wall_5
+    Nozzle_Outer_Wall_15
     {
         type            preciceAdapter;
     }
@@ -64,7 +48,19 @@ boundaryField
     {
         type            preciceAdapter;
     }
-    Cooling_Channel_1_Entry_Wall
+    Cooling_Channel_3_Entry_Wall
+    {
+        type            preciceAdapter;
+    }
+    Nozzle_Outer_Wall_10
+    {
+        type            preciceAdapter;
+    }
+    Nozzle_Outer_Wall_9
+    {
+        type            preciceAdapter;
+    }
+    Nozzle_Outer_Wall_4
     {
         type            preciceAdapter;
     }
@@ -72,7 +68,11 @@ boundaryField
     {
         type            preciceAdapter;
     }
-    Cooling_Channel_3_Entry_Wall
+    Cooling_Channel_1_Entry_Wall
+    {
+        type            preciceAdapter;
+    }
+    Cooling_Channel_2_Entry_Wall
     {
         type            preciceAdapter;
     }

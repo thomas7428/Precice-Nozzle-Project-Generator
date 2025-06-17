@@ -242,6 +242,9 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
         with open(Path(output_dir) / 'tools/log.sh', 'w') as f:
             f.write('#!/usr/bin/env bash\nLOGFILE="log.$(basename $(pwd))"\nclose_log() { echo "Log closed at $(date)" >> "$LOGFILE"; }\n')
 
+    # Place mesh and input files in correct locations for CalculiX
+    shutil.copy2(mesh_files['solid'], os.path.join(output_dir, 'calculix/mesh.inp'))
+
     # Place mesh files
     mesh_map = {
         'solid': 'calculix/mesh.msh',

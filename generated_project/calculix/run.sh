@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e -u
 
-. ../../tools/log.sh
+. ../tools/log.sh
 exec > >(tee --append "$LOGFILE") 2>&1
 
 if [ ! -f mesh.inp ]; then
@@ -9,6 +9,7 @@ if [ ! -f mesh.inp ]; then
     exit 1
 fi
 
+export CCX_NPROC_EQUATION_SOLVER=1
 ccx_preCICE -i solid -precice-participant Solid
 
 close_log
