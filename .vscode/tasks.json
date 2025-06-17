@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run PreCICE Nozzle Generator",
+            "type": "shell",
+            "command": "python3 scripts/precice_nozzle_generator.py",
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}
