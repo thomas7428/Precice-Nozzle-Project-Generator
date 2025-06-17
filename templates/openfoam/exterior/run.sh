@@ -1,8 +1,19 @@
-#!/bin/bash
-# Run OpenFOAM simulation for exterior region
-cd "$(dirname "$0")"
-blockMesh > log.blockMesh 2>&1
-# Replace with actual mesh conversion if needed
-decomposePar > log.decomposePar 2>&1
-mpirun -np 4 rhoCentralFoam -parallel > log.foam 2>&1
-reconstructPar > log.reconstructPar 2>&1
+#!/usr/bin/env bash
+set -e -u
+
+. ../../tools/log.sh
+exec > >(tee --append "$LOGFILE") 2>&1
+
+if [ ! -f mesh.msh ]; then
+    echo "Mesh file mesh.msh not found. Please ensure the mesh is present."
+    exit 1
+fi
+
+blockMesh
+# Add mesh conversion if needed
+
+decomposePar
+mpirun -np 4 preciceAdapterFunctionObject -case . -participant FluidOuter
+reconstructPar
+
+close_log
