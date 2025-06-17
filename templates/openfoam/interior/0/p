@@ -1,0 +1,20 @@
+/* Initial pressure field for interior */
+dimensions      [0 2 -2 0 0 0 0];
+internalField   uniform 101325;
+boundaryField
+{
+    inlet
+    {
+        type            totalPressure;
+        p0              uniform 101325;
+    }
+    outlet
+    {
+        type            fixedValue;
+        value           uniform 101325;
+    }
+    wall
+    {
+        type            zeroGradient;
+    }
+}

@@ -1,6 +1,6 @@
 <!-- PreCICE XML configuration for Vulcain 2.1-like nozzle simulation -->
 <!-- This file couples CalculiX and OpenFOAM regions for a rocket nozzle simulation. -->
-<!-- Placeholders: {{INTERIOR_MESH}}, {{EXTERIOR_MESH}}, {{COOLING_MESH}}, {{SOLID_MESH}}, {{FRACTION_OF_PI}} -->
+<!-- Placeholders: {{INTERIOR_INTERFACE}}, {{EXTERIOR_INTERFACE}}, {{COOLING_INTERFACE}}, {{SOLID_INTERFACE}}, {{INTERIOR_MESH}}, {{EXTERIOR_MESH}}, {{COOLING_MESH}}, {{SOLID_MESH}}, {{FRACTION_OF_PI}} -->
 
 <precice-configuration>
   <participants>
@@ -10,17 +10,25 @@
     <participant name="CalculiX-solid" solver="CalculiX" />
   </participants>
   <meshes>
-    <mesh name="INTERIOR_MESH" />
-    <mesh name="EXTERIOR_MESH" />
-    <mesh name="COOLING_MESH" />
-    <mesh name="SOLID_MESH" />
+    <mesh name="{{INTERIOR_INTERFACE}}">
+      <use-face name="{{INTERIOR_INTERFACE}}" />
+    </mesh>
+    <mesh name="{{EXTERIOR_INTERFACE}}">
+      <use-face name="{{EXTERIOR_INTERFACE}}" />
+    </mesh>
+    <mesh name="{{COOLING_INTERFACE}}">
+      <use-face name="{{COOLING_INTERFACE}}" />
+    </mesh>
+    <mesh name="{{SOLID_INTERFACE}}">
+      <use-face name="{{SOLID_INTERFACE}}" />
+    </mesh>
   </meshes>
   <mappings>
-    <mapping name="fluid-solid-map" from="INTERIOR_MESH" to="SOLID_MESH" type="nearest-neighbor" />
-    <mapping name="cooling-solid-map" from="COOLING_MESH" to="SOLID_MESH" type="nearest-neighbor" />
+    <mapping name="fluid-solid-map" from="{{INTERIOR_INTERFACE}}" to="{{SOLID_INTERFACE}}" type="{{precice.data_mapping}}" />
+    <mapping name="cooling-solid-map" from="{{COOLING_INTERFACE}}" to="{{SOLID_INTERFACE}}" type="{{precice.data_mapping}}" />
   </mappings>
   <coupling-schemes>
-    <implicit-coupling>
+    <{{precice.coupling_scheme}}-coupling>
       <participants>
         <participant name="OpenFOAM-interior" />
         <participant name="CalculiX-solid" />
@@ -33,8 +41,8 @@
         <data name="Temperature" from="OpenFOAM-interior" to="CalculiX-solid" />
         <data name="Displacement" from="CalculiX-solid" to="OpenFOAM-interior" />
       </exchange-data>
-    </implicit-coupling>
-    <implicit-coupling>
+    </{{precice.coupling_scheme}}-coupling>
+    <{{precice.coupling_scheme}}-coupling>
       <participants>
         <participant name="OpenFOAM-cooling" />
         <participant name="CalculiX-solid" />
@@ -47,10 +55,10 @@
         <data name="Temperature" from="OpenFOAM-cooling" to="CalculiX-solid" />
         <data name="Displacement" from="CalculiX-solid" to="OpenFOAM-cooling" />
       </exchange-data>
-    </implicit-coupling>
+    </{{precice.coupling_scheme}}-coupling>
   </coupling-schemes>
   <time-stepping>
-    <max-time-steps>10000</max-time-steps>
-    <max-time-step-size>1e-6</max-time-step-size>
+    <max-time-steps>{{precice.max_time_steps}}</max-time-steps>
+    <max-time-step-size>{{precice.max_time_step_size}}</max-time-step-size>
   </time-stepping>
 </precice-configuration>

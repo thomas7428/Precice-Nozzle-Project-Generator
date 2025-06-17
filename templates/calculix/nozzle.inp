@@ -3,15 +3,19 @@
 
 *Node and element definitions will be imported from the provided mesh*
 
-*MATERIAL, NAME=STEEL
+*MATERIAL, NAME={{material.name}}
 *ELASTIC
-210000, 0.3
+{{material.young_modulus}}, {{material.poisson_ratio}}
 *DENSITY
-7850
+{{material.density}}
 *CONDUCTIVITY
-45
+{{material.conductivity}}
 *SPECIFIC HEAT
-500
+{{material.specific_heat}}
+*EXPANSION
+{{material.thermal_expansion}}
+*PLASTIC
+{{material.yield_strength}}, 0.0
 
 *BOUNDARY, NSET=INLET
 1, 1, 0.0
@@ -24,7 +28,7 @@
 ... (to be filled by mesh import)
 
 *STEP
-*STATIC
+*{{calculix.step_type}}
 *COUPLING, SURFACE=NOZZLE_WALL, DOF=1,2,3
 *COUPLING, SURFACE=COOLING_WALL, DOF=1,2,3
 *END STEP

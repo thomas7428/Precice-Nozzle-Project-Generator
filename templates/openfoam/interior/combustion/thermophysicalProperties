@@ -1,0 +1,29 @@
+thermoType
+{
+    type            heRhoThermo;
+    mixture         reactingMixture;
+    transport       sutherland;
+    thermo          janaf;
+    equationOfState perfectGas;
+    specie          specie;
+    energy          sensibleEnthalpy;
+}
+
+reactingMixture
+{
+    specie
+    {
+        nMoles          1;
+    }
+    thermodynamics
+    {
+        Cp              1005;
+        Hf              0;
+    }
+    transport
+    {
+        mu              1.8e-5;
+        Pr              0.7;
+    }
+    // Add more detailed species data as needed
+}

@@ -1,0 +1,13 @@
+ddtSchemes
+{
+    default         Euler;
+}
+divSchemes
+{
+    default         none;
+    div(phi,U)      Gauss upwind;
+}
+gradSchemes
+{
+    default         Gauss linear;
+}

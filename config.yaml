@@ -1,0 +1,128 @@
+# User configuration for PreCICE nozzle project generator
+material:
+  name: STEEL
+  young_modulus: 210000      # MPa
+  poisson_ratio: 0.3
+  density: 7850              # kg/m^3
+  conductivity: 45           # W/(m·K)
+  specific_heat: 500         # J/(kg·K)
+  thermal_expansion: 1.2e-5  # 1/K
+  yield_strength: 250        # MPa
+  reference_temperature: 293 # K
+
+chemistry:
+  fluids:
+    - name: Air
+      mol_weight: 28.96      # g/mol
+      cp: 1005               # J/(kg·K)
+      mu: 1.8e-5             # Pa·s
+      pr: 0.7
+      gamma: 1.4
+      rho: 1.225             # kg/m^3
+    - name: Water
+      mol_weight: 18.02
+      cp: 4182
+      mu: 1.0e-3
+      pr: 7.0
+      gamma: 1.0
+      rho: 998
+
+boundary_conditions:
+  interior:
+    inlet:
+      type: totalPressure
+      value: 2e6             # Pa
+      temperature: 350       # K
+    outlet:
+      type: fixedValue
+      value: 1e5             # Pa
+    wall:
+      type: coupled
+  exterior:
+    inlet:
+      type: fixedValue
+      value: 1e5             # Pa
+      temperature: 300       # K
+    outlet:
+      type: fixedValue
+      value: 1e5             # Pa
+    wall:
+      type: coupled
+  cooling_channel:
+    inlet:
+      type: fixedValue
+      value: 1.5e5           # Pa
+      temperature: 290       # K
+    outlet:
+      type: fixedValue
+      value: 1e5             # Pa
+    wall:
+      type: coupled
+
+initial_conditions:
+  velocity: [0, 0, 0]
+  pressure: 101325
+  temperature: 300
+
+environment:
+  ambient_temperature: 300   # K
+  ambient_pressure: 101325   # Pa
+  gravity: [0, -9.81, 0]    # m/s^2
+
+# Simulation options
+simulation:
+  time_step: 1e-6            # s
+  end_time: 0.01             # s
+  write_interval: 100
+  solver: rhoCentralFoam
+  reacting_solver: reactingFoam
+  combustion: false          # Set to true to enable combustion (reacting flow)
+  parallel_ranks: 4
+  fraction_of_pi: 0.5
+  restart: false
+  output_format: vtk
+
+precice:
+  coupling_scheme: implicit
+  max_time_steps: 10000
+  max_time_step_size: 1e-6
+  data_mapping: nearest-neighbor
+  exchange_data:
+    - name: Temperature
+      from: OpenFOAM-interior
+      to: CalculiX-solid
+    - name: Displacement
+      from: CalculiX-solid
+      to: OpenFOAM-interior
+
+calculix:
+  step_type: static
+  n_steps: 1
+  loads:
+    - type: boundary
+      set: INLET
+      dof: [1,2,3]
+      value: 0.0
+  output_frequency: 1
+
+postprocessing:
+  paraview: true
+  save_results: true
+  results_dir: results/
+
+combustion:
+  enabled: false  # Set true to enable combustion
+  fuel: H2
+  oxidizer: O2
+  products: [H2O]
+  mechanism: |
+    // Example: single-step global reaction for H2/O2
+    H2 + 0.5 O2 => H2O
+  initial_mass_fractions:
+    H2: 0.03
+    O2: 0.21
+    H2O: 0.0
+    N2: 0.76
+  pressure: 2e6  # Pa
+  temperature: 350  # K
+  # Add more fields as needed for a detailed mechanism

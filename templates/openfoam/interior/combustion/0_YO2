@@ -1,0 +1,19 @@
+/* Initial mass fraction for O2 */
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform {{combustion.initial_mass_fractions.O2}};
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform {{combustion.initial_mass_fractions.O2}};
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    wall
+    {
+        type            zeroGradient;
+    }
+}

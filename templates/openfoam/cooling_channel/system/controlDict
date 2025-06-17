@@ -1,0 +1,6 @@
+application     {{simulation.cooling_solver}};
+startFrom       startTime;
+endTime         {{simulation.end_time}};
+deltaT          {{simulation.time_step}};
+writeControl    timeStep;
+writeInterval   {{simulation.write_interval}};
