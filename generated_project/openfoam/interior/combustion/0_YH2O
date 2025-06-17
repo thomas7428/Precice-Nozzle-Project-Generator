@@ -1,0 +1,19 @@
+/* Initial mass fraction for H2O */
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform 0.0;
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 0.0;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    wall
+    {
+        type            zeroGradient;
+    }
+}

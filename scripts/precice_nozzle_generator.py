@@ -231,6 +231,17 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
         else:
             shutil.copy2(item, output_dir)
 
+    # Copy tools/log.sh to project root for logging in all run.sh scripts
+    tools_dir = template_dir / 'tools'
+    if tools_dir.exists():
+        for item in tools_dir.iterdir():
+            shutil.copy2(item, Path(output_dir) / 'tools' / item.name)
+    else:
+        os.makedirs(Path(output_dir) / 'tools', exist_ok=True)
+        # fallback: create a minimal log.sh if missing
+        with open(Path(output_dir) / 'tools/log.sh', 'w') as f:
+            f.write('#!/usr/bin/env bash\nLOGFILE="log.$(basename $(pwd))"\nclose_log() { echo "Log closed at $(date)" >> "$LOGFILE"; }\n')
+
     # Place mesh files
     mesh_map = {
         'solid': 'calculix/mesh.msh',

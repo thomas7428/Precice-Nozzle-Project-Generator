@@ -1,0 +1,19 @@
+/* Initial mass fraction for H2 */
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform 0.03;
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 0.03;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    wall
+    {
+        type            zeroGradient;
+    }
+}

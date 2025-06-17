@@ -1,0 +1,19 @@
+/* Initial mass fraction for O2 */
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform 0.21;
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 0.21;
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    wall
+    {
+        type            zeroGradient;
+    }
+}

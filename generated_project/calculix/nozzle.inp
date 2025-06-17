@@ -1,0 +1,16 @@
+*Heading
+** Auto-generated CalculiX input
+*Node
+*Element, type=C3D4
+*MATERIAL, NAME=STEEL
+*ELASTIC
+210000, 0.3
+*DENSITY
+7850
+*CONDUCTIVITY
+45
+*SPECIFIC HEAT
+500
+*STEP
+*STATIC
+*END STEP
