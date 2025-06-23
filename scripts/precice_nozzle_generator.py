@@ -37,6 +37,9 @@ def find_interfaces(physical_names, pattern):
 
 def replace_in_file(filepath, replacements):
     """Replace placeholders in a file with values from the replacements dict."""
+    if not os.path.isfile(filepath):
+        print(f"[WARNING] File not found for replacement: {filepath}")
+        return
     with open(filepath, 'r') as f:
         content = f.read()
     for key, value in replacements.items():
@@ -200,7 +203,10 @@ def generate_openfoam_boundary_field(patch_names, patch_type='preciceAdapter'):
 def write_openfoam_boundaries(output_dir, region, patch_names):
     # Update 0/U and 0/p with all FSI patches
     for field in ['U', 'p']:
-        file_path = os.path.join(output_dir, f'openfoam/{region}/0/{field}')
+        file_path = os.path.join(output_dir, region, '0', field)
+        dir_path = os.path.dirname(file_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)
         with open(file_path, 'w') as f:
             f.write(generate_openfoam_boundary_field(patch_names))
 
@@ -286,7 +292,14 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path=Non
     template_dir = Path(__file__).parent.parent / 'templates'
     for item in template_dir.iterdir():
         if item.is_dir():
-            shutil.copytree(item, Path(output_dir) / item.name, dirs_exist_ok=True)
+            # Custom: flatten openfoam subfolders to openfoam-interior, openfoam-exterior, openfoam-cooling
+            if item.name == 'openfoam':
+                for sub in item.iterdir():
+                    if sub.is_dir():
+                        flat_name = f"openfoam-{sub.name}" if sub.name != 'tools' else sub.name
+                        shutil.copytree(sub, Path(output_dir) / flat_name, dirs_exist_ok=True)
+            else:
+                shutil.copytree(item, Path(output_dir) / item.name, dirs_exist_ok=True)
         else:
             shutil.copy2(item, output_dir)
 
@@ -356,14 +369,19 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path=Non
 
     # Merge config values into replacements
     replacements.update({f'{{{{{k}}}}}': v for k, v in config_flat.items()})
-    # Replace in all OpenFOAM files recursively
+    # Replace in all OpenFOAM files recursively (now in openfoam-interior, openfoam-exterior, openfoam-cooling)
     for region in ['interior', 'exterior', 'cooling_channel']:
-        replace_in_dir(os.path.join(output_dir, f'openfoam/{region}'), replacements)
+        flat_name = f"openfoam-{region if region != 'cooling_channel' else 'cooling'}"
+        replace_in_dir(os.path.join(output_dir, flat_name), replacements)
+        # Also replace in openfoam-cooling_channel for backward compatibility or template mismatch
+        if region == 'cooling_channel':
+            replace_in_dir(os.path.join(output_dir, 'openfoam-cooling_channel'), replacements)
     # Replace in CalculiX, OpenFOAM, and PreCICE config files
     replace_in_file(Path(output_dir) / 'calculix/nozzle.inp', replacements)
-    replace_in_file(Path(output_dir) / 'openfoam/interior/README.txt', replacements)
-    replace_in_file(Path(output_dir) / 'openfoam/exterior/README.txt', replacements)
-    replace_in_file(Path(output_dir) / 'openfoam/cooling_channel/README.txt', replacements)
+    replace_in_file(Path(output_dir) / 'openfoam-interior/README.txt', replacements)
+    replace_in_file(Path(output_dir) / 'openfoam-exterior/README.txt', replacements)
+    replace_in_file(Path(output_dir) / 'openfoam-cooling/README.txt', replacements)
+    replace_in_file(Path(output_dir) / 'openfoam-cooling_channel/README.txt', replacements)
     replace_in_file(Path(output_dir) / 'precice/precice-config.xml', replacements)
 
     # --- Combustion logic ---
@@ -389,9 +407,10 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path=Non
 
     # Example: collect FSI interface names
     fsi_patches = list(set(solid_nozzle_walls + outer_nozzle_walls + cooling_entries))
-    # Write OpenFOAM boundary files for all regions
+    # Write OpenFOAM boundary files for all regions (now in openfoam-interior, openfoam-exterior, openfoam-cooling)
     for region in ['interior', 'exterior', 'cooling_channel']:
-        write_openfoam_boundaries(output_dir, region, fsi_patches)
+        flat_name = f"openfoam-{region if region != 'cooling_channel' else 'cooling'}"
+        write_openfoam_boundaries(output_dir, flat_name, fsi_patches)
     # Write CalculiX surfaces for FSI
     # (Assume fsi_sets is a dict {name: [elem_ids]})
     # with open(Path(output_dir) / 'calculix/nozzle.inp', 'a') as f:

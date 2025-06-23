@@ -1,0 +1,28 @@
+thermoType
+{
+    type            heRhoThermo;
+    mixture         pureMixture;
+    transport       sutherland;
+    thermo          hConst;
+    equationOfState perfectGas;
+    specie          specie;
+    energy          sensibleEnthalpy;
+}
+mixture
+{
+    specie
+    {
+        nMoles          1;
+        molWeight       18.02;
+    }
+    thermodynamics
+    {
+        Cp              4182;
+        Hf              0;
+    }
+    transport
+    {
+        mu              0.001;
+        Pr              7.0;
+    }
+}

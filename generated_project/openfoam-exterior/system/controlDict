@@ -1,0 +1,6 @@
+application     rhoCentralFoam;
+startFrom       startTime;
+endTime         0.01;
+deltaT          1e-6;
+writeControl    timeStep;
+writeInterval   100;
