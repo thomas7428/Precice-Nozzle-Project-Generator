@@ -1,6 +1,6 @@
 /* OpenFOAM interior fluid case template */
-/* Mesh file: {{MESH_PATH}} */
-/* Fraction of pi: {{FRACTION_OF_PI}} */
+/* Mesh file: meshs/Solid_mesh.msh */
+/* Fraction of pi: 0.5 */
 
 /* Replace this file with a real OpenFOAM case template for the interior fluid region. */
 

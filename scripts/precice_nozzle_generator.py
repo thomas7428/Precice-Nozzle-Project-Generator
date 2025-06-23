@@ -220,6 +220,57 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
     output_dir: path to the generated project
     fraction_of_pi: float, portion of the nozzle to study (e.g., 0.5 for half-pi)
     """
+    # --- Deduce fraction_of_pi from mesh geometry (angle between revolved face and initial face) ---
+    def deduce_fraction_of_pi_from_mesh(mesh_path):
+        nodes, elements, phys_sets = parse_gmsh_mesh_v4(mesh_path)
+        phys_names = parse_physical_names(mesh_path)
+        initial_ids = [pid for pid, name in phys_names.items() if 'Initial_Face' in name]
+        revolved_ids = [pid for pid, name in phys_names.items() if 'Revolved_Face' in name]
+        initial_nodes = set()
+        revolved_nodes = set()
+        for elem_id, elem_type, phys_grp, conn in elements:
+            if phys_grp in initial_ids:
+                initial_nodes.update(conn)
+            if phys_grp in revolved_ids:
+                revolved_nodes.update(conn)
+        import math
+        def avg_theta(coords):
+            # Use atan2(y, x) for each node, average over all nodes
+            thetas = [math.atan2(y, x) for x, y, *_ in coords]
+            # Normalize angles to [0, 2pi)
+            thetas = [(theta + 2 * math.pi) % (2 * math.pi) for theta in thetas]
+            return sum(thetas) / len(thetas) if thetas else 0.0
+        initial_coords = [nodes[nid] for nid in initial_nodes if nid in nodes]
+        revolved_coords = [nodes[nid] for nid in revolved_nodes if nid in nodes]
+        if not initial_coords or not revolved_coords:
+            print("[WARN] Could not find Initial_Face or Revolved_Face nodes in mesh for fraction_of_pi deduction.")
+            return 1.0
+        theta_initial = avg_theta(initial_coords)
+        theta_revolved = avg_theta(revolved_coords)
+        span = abs(theta_revolved - theta_initial)
+        if span > math.pi:
+            span = 2 * math.pi - span
+        return span / math.pi if span > 0 else 1.0
+
+    # --- Parse mesh boundaries and assign interface variables before any use ---
+    solid_names = parse_physical_names(mesh_files['solid'])
+    inner_names = parse_physical_names(mesh_files['interior_fluid'])
+    outer_names = parse_physical_names(mesh_files['exterior_fluid'])
+    cooling_names = parse_physical_names(mesh_files['cooling_channel_fluid'])
+    solid_nozzle_walls = find_interfaces(solid_names, r'Nozzle_Outer_Wall')
+    outer_nozzle_walls = find_interfaces(outer_names, r'Nozzle_Outer_Wall')
+    cooling_entries = find_interfaces(cooling_names, r'Cooling_Channel_\d+_Entry_Wall')
+    cooling_exits = find_interfaces(cooling_names, r'Cooling_Channel_\d+_Exit_Wall')
+    print("Detected solid nozzle wall surfaces:", solid_nozzle_walls)
+    print("Detected outer fluid nozzle wall surfaces:", outer_nozzle_walls)
+    print("Detected cooling channel entries:", cooling_entries)
+    print("Detected cooling channel exits:", cooling_exits)
+
+    # --- Deduce fraction_of_pi if not provided or 0 ---
+    if fraction_of_pi is None or fraction_of_pi == 0:
+        fraction_of_pi = deduce_fraction_of_pi_from_mesh(mesh_files['solid'])
+        print(f"[INFO] Deduced fraction_of_pi from mesh: {fraction_of_pi}")
+
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
 
@@ -247,53 +298,7 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
 
     # Copy CalculiX input template and rename to solid.inp in calculix directory
     shutil.copy2(template_dir / 'calculix/nozzle.inp', os.path.join(output_dir, 'calculix/solid.inp'))
-    # Fill placeholders in solid.inp
-    replace_in_file(os.path.join(output_dir, 'calculix/solid.inp'), replacements)
-
-    # Place mesh files
-    mesh_map = {
-        'solid': 'calculix/mesh.msh',
-        'interior_fluid': 'openfoam/interior/mesh.msh',
-        'exterior_fluid': 'openfoam/exterior/mesh.msh',
-        'cooling_channel_fluid': 'openfoam/cooling_channel/mesh.msh',
-    }
-    for key, dest in mesh_map.items():
-        if key in mesh_files:
-            dest_path = Path(output_dir) / dest
-            os.makedirs(dest_path.parent, exist_ok=True)
-            shutil.copy2(mesh_files[key], dest_path)
-
-    # Copy mesh files into generated_project/meshs
-    mesh_dir = Path(output_dir) / 'meshs'
-    os.makedirs(mesh_dir, exist_ok=True)
-    for key, src in mesh_files.items():
-        dest = mesh_dir / Path(src).name
-        shutil.copy2(src, dest)
-        mesh_files[key] = str(dest)
-
-    # CalculiX mesh automation (GMSH 4.x)
-    nodes, elements, phys_sets = parse_gmsh_mesh_v4(mesh_files['solid'])
-    solid_names = parse_physical_names(mesh_files['solid'])
-    write_calculix_inp(nodes, elements, solid_names, phys_sets, Path(output_dir) / 'calculix/nozzle.inp')
-
-    # Parse mesh boundaries
-    solid_names = parse_physical_names(mesh_files['solid'])
-    inner_names = parse_physical_names(mesh_files['interior_fluid'])
-    outer_names = parse_physical_names(mesh_files['exterior_fluid'])
-    cooling_names = parse_physical_names(mesh_files['cooling_channel_fluid'])
-
-    # Example: find all nozzle wall interfaces for FSI
-    solid_nozzle_walls = find_interfaces(solid_names, r'Nozzle_Outer_Wall')
-    outer_nozzle_walls = find_interfaces(outer_names, r'Nozzle_Outer_Wall')
-    cooling_entries = find_interfaces(cooling_names, r'Cooling_Channel_\d+_Entry_Wall')
-    cooling_exits = find_interfaces(cooling_names, r'Cooling_Channel_\d+_Exit_Wall')
-
-    print("Detected solid nozzle wall surfaces:", solid_nozzle_walls)
-    print("Detected outer fluid nozzle wall surfaces:", outer_nozzle_walls)
-    print("Detected cooling channel entries:", cooling_entries)
-    print("Detected cooling channel exits:", cooling_exits)
-
-    # Prepare replacements for placeholders
+    # Prepare replacements for placeholders (moved up before use)
     replacements = {
         '{{MESH_PATH}}': mesh_files['solid'],
         '{{INTERIOR_MESH}}': mesh_files['interior_fluid'],
@@ -301,6 +306,15 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
         '{{COOLING_MESH}}': mesh_files['cooling_channel_fluid'],
         '{{SOLID_MESH}}': mesh_files['solid'],
         '{{FRACTION_OF_PI}}': str(fraction_of_pi),
+        '{{material.name}}': config.get('material', {}).get('name', 'STEEL'),
+        '{{material.young_modulus}}': str(config.get('material', {}).get('young_modulus', 210000)),
+        '{{material.poisson_ratio}}': str(config.get('material', {}).get('poisson_ratio', 0.3)),
+        '{{material.density}}': str(config.get('material', {}).get('density', 7850)),
+        '{{material.conductivity}}': str(config.get('material', {}).get('conductivity', 45)),
+        '{{material.specific_heat}}': str(config.get('material', {}).get('specific_heat', 500)),
+        '{{material.thermal_expansion}}': str(config.get('material', {}).get('thermal_expansion', 1.2e-5)),
+        '{{material.yield_strength}}': str(config.get('material', {}).get('yield_strength', 250)),
+        '{{calculix.step_type}}': 'STATIC',  # Default, can be made configurable
     }
     # Ensure cooling_solver is set in replacements before any replacements are made
     cooling_solver = config.get('simulation', {}).get('cooling_solver')
@@ -315,6 +329,8 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
         replacements['NOZZLE_WALL'] = solid_nozzle_walls[0]
     if cooling_entries:
         replacements['COOLING_WALL'] = cooling_entries[0]
+    # Fill placeholders in solid.inp
+    replace_in_file(os.path.join(output_dir, 'calculix/solid.inp'), replacements)
 
     # Detect interface names for PreCICE XML
     # These should be the patch/physical names at the fluid-solid interface for each region
@@ -378,6 +394,38 @@ def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='co
     print(f"Project generated at {output_dir}. All files and meshes are included and ready to use.")
     # Validation step
     validate_generated_project(output_dir, mesh_files)
+
+    # --- Debug summary printout ---
+    print("\n===== PreCICE Nozzle Project Generation Summary =====")
+    print(f"Output directory: {output_dir}")
+    print(f"Solid mesh: {mesh_files['solid']}")
+    print(f"Interior fluid mesh: {mesh_files['interior_fluid']}")
+    print(f"Exterior fluid mesh: {mesh_files['exterior_fluid']}")
+    print(f"Cooling channel mesh: {mesh_files['cooling_channel_fluid']}")
+    print(f"Fraction of pi (sector angle): {fraction_of_pi:.4f}")
+    print(f"Combustion enabled: {'Yes' if combustion else 'No'}")
+    print(f"Material: {config.get('material', {}).get('name', 'STEEL')}")
+    print(f"Material properties: density={config.get('material', {}).get('density', 7850)}, E={config.get('material', {}).get('young_modulus', 210000)}, nu={config.get('material', {}).get('poisson_ratio', 0.3)}, k={config.get('material', {}).get('conductivity', 45)}, cp={config.get('material', {}).get('specific_heat', 500)}")
+    print(f"OpenFOAM solver: {replacements.get('{{simulation.solver}}', 'rhoCentralFoam')}")
+    print(f"Cooling solver: {replacements.get('{{simulation.cooling_solver}}', 'rhoCentralFoam')}")
+    print(f"PreCICE config: {os.path.join(output_dir, 'precice/precice-config.xml')}")
+    print(f"CalculiX input: {os.path.join(output_dir, 'calculix/solid.inp')}")
+    print(f"Number of solid nozzle wall interfaces: {len(solid_nozzle_walls)}")
+    print(f"Number of outer fluid nozzle wall interfaces: {len(outer_nozzle_walls)}")
+    print(f"Number of cooling channel entries: {len(cooling_entries)}")
+    print(f"Number of cooling channel exits: {len(cooling_exits)}")
+    print(f"Number of PreCICE interfaces: {len(set(interface_names.values()))}")
+    print(f"Number of mesh physical names: solid={len(solid_names)}, interior={len(inner_names)}, exterior={len(outer_names)}, cooling={len(cooling_names)}")
+    # Warnings if any interface is missing
+    if not solid_nozzle_walls:
+        print("[WARNING] No solid nozzle wall interface detected!")
+    if not outer_nozzle_walls:
+        print("[WARNING] No outer fluid nozzle wall interface detected!")
+    if not cooling_entries:
+        print("[WARNING] No cooling channel entry interface detected!")
+    if not cooling_exits:
+        print("[WARNING] No cooling channel exit interface detected!")
+    print("====================================================\n")
 
 def cli_wizard():
     print("\n==== PreCICE Nozzle Project Generator ====")

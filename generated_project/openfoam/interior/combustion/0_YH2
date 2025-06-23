@@ -1,12 +1,12 @@
 /* Initial mass fraction for H2 */
 dimensions      [0 0 0 0 0 0 0];
-internalField   uniform {{combustion.initial_mass_fractions.H2}};
+internalField   uniform 0.03;
 boundaryField
 {
     inlet
     {
         type            fixedValue;
-        value           uniform {{combustion.initial_mass_fractions.H2}};
+        value           uniform 0.03;
     }
     outlet
     {

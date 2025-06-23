@@ -13,16 +13,16 @@ mixture
     specie
     {
         nMoles          1;
-        molWeight       {{chemistry.fluids.1.mol_weight}};
+        molWeight       18.02;
     }
     thermodynamics
     {
-        Cp              {{chemistry.fluids.1.cp}};
+        Cp              4182;
         Hf              0;
     }
     transport
     {
-        mu              {{chemistry.fluids.1.mu}};
-        Pr              {{chemistry.fluids.1.pr}};
+        mu              0.001;
+        Pr              7.0;
     }
 }

@@ -1,34 +1,32 @@
+*INCLUDE, INPUT=mesh.inp
+
 *Heading
 ** Vulcain 2.1-like nozzle solid (CalculiX)
 
-*Node and element definitions will be imported from the provided mesh*
-
-*MATERIAL, NAME={{material.name}}
+*MATERIAL, NAME=STEEL
 *ELASTIC
-{{material.young_modulus}}, {{material.poisson_ratio}}
+210000, 0.3
 *DENSITY
-{{material.density}}
+7850
 *CONDUCTIVITY
-{{material.conductivity}}
+45
 *SPECIFIC HEAT
-{{material.specific_heat}}
+500
 *EXPANSION
-{{material.thermal_expansion}}
+1.2e-05
 *PLASTIC
-{{material.yield_strength}}, 0.0
+250, 0.0
 
 *BOUNDARY, NSET=INLET
 1, 1, 0.0
 1, 2, 0.0
 1, 3, 0.0
 
-*SURFACE, NAME=NOZZLE_WALL, TYPE=ELEMENT
-... (to be filled by mesh import)
-*SURFACE, NAME=COOLING_WALL, TYPE=ELEMENT
-... (to be filled by mesh import)
+*SURFACE, NAME=Nozzle_Outer_Wall_1, TYPE=ELEMENT
+*SURFACE, NAME=Cooling_Channel_1_Entry_Wall, TYPE=ELEMENT
 
 *STEP
-*{{calculix.step_type}}
-*COUPLING, SURFACE=NOZZLE_WALL, DOF=1,2,3
-*COUPLING, SURFACE=COOLING_WALL, DOF=1,2,3
+*static
+*COUPLING, SURFACE=Nozzle_Outer_Wall_1, DOF=1,2,3
+*COUPLING, SURFACE=Cooling_Channel_1_Entry_Wall, DOF=1,2,3
 *END STEP

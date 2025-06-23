@@ -1,7 +1,7 @@
+*INCLUDE, INPUT=mesh.inp
+
 *Heading
 ** Vulcain 2.1-like nozzle solid (CalculiX)
-
-*Node and element definitions will be imported from the provided mesh*
 
 *MATERIAL, NAME={{material.name}}
 *ELASTIC
@@ -23,9 +23,7 @@
 1, 3, 0.0
 
 *SURFACE, NAME=NOZZLE_WALL, TYPE=ELEMENT
-... (to be filled by mesh import)
 *SURFACE, NAME=COOLING_WALL, TYPE=ELEMENT
-... (to be filled by mesh import)
 
 *STEP
 *{{calculix.step_type}}

@@ -9,6 +9,11 @@ if [ ! -f mesh.inp ]; then
     exit 1
 fi
 
+if [ ! -f solid.inp ]; then
+    echo "Input file solid.inp not found. Please ensure the input is present."
+    exit 1
+fi
+
 export CCX_NPROC_EQUATION_SOLVER=1
 ccx_preCICE -i solid -precice-participant Solid
 
