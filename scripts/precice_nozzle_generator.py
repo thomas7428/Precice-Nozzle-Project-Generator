@@ -151,7 +151,11 @@ def write_calculix_inp(nodes, elements, phys_names, phys_sets, out_path):
         f.write('*MATERIAL, NAME=STEEL\n*ELASTIC\n210000, 0.3\n*DENSITY\n7850\n*CONDUCTIVITY\n45\n*SPECIFIC HEAT\n500\n')
         f.write('*STEP\n*STATIC\n*END STEP\n')
 
-def load_config(config_path):
+def load_config(config_path=None):
+    # If no config_path is given, look for config.yaml in the script directory
+    if config_path is None:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        config_path = os.path.join(script_dir, 'config.yaml')
     if not os.path.isfile(config_path):
         print(f"[ERROR] Config file not found: {config_path}")
         print("Please provide a valid config.yaml path. Exiting.")
@@ -215,7 +219,7 @@ def update_precice_xml_interfaces(xml_path, interface_names):
     with open(xml_path, 'w') as f:
         f.write(content)
 
-def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path='config.yaml', combustion=False):
+def generate_project(mesh_files, output_dir, fraction_of_pi=1.0, config_path=None, combustion=False):
     config = load_config(config_path)
     config_flat = flatten_config(config)
 
