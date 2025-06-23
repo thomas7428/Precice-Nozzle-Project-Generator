@@ -152,6 +152,10 @@ def write_calculix_inp(nodes, elements, phys_names, phys_sets, out_path):
         f.write('*STEP\n*STATIC\n*END STEP\n')
 
 def load_config(config_path):
+    if not os.path.isfile(config_path):
+        print(f"[ERROR] Config file not found: {config_path}")
+        print("Please provide a valid config.yaml path. Exiting.")
+        sys.exit(1)
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
